@@ -473,11 +473,20 @@
         
         // Handle keyboard input
         function handleKeyDown(e) {
-            if (!gameActive || sacrificedKeys[e.code]) return;
-            
+            if (!gameActive) return;
+
+            // Block disabled keys and show alert
+            if (disabledKeys[e.code]) {
+                alert(`The "${e.code}" key is disabled! Sacrifice another key or use a different control.`);
+                return;
+            }
+
+            // Block sacrificed keys
+            if (sacrificedKeys[e.code]) return;
+
             let newX = player.x;
             let newY = player.y;
-            
+
             switch(e.code) {
                 case 'ArrowUp':
                     newY--;
@@ -499,7 +508,7 @@
                             teleportX = Math.floor(Math.random() * (mazeWidth - 2)) + 1;
                             teleportY = Math.floor(Math.random() * (mazeHeight - 2)) + 1;
                         } while (maze[teleportY][teleportX] !== 0);
-                        
+
                         player.x = teleportX;
                         player.y = teleportY;
                         return;
@@ -508,11 +517,11 @@
             }
             
             // Check if new position is valid (not a wall)
-            if (newX >= 0 && newX < mazeWidth && newY >= 0 && newY < mazeHeight && 
+            if (newX >= 0 && newX < mazeWidth && newY >= 0 && newY < mazeHeight &&
                 maze[newY][newX] !== 1) {
                 player.x = newX;
                 player.y = newY;
-                
+
                 // Check for collision with enemies
                 for (let i = 0; i < enemies.length; i++) {
                     if (enemies[i].x === player.x && enemies[i].y === player.y) {
@@ -523,7 +532,7 @@
                         } else {
                             lives--;
                             updateUI();
-                            
+
                             if (lives <= 0) {
                                 gameOver();
                                 return;
@@ -574,27 +583,53 @@
             // For simplicity, we're using timeouts in activateAbility
         }
         
-        // Level up the game
-        function levelUp() {
-            level++;
-            score += 100;
-            
-            // Generate new maze for the next level
-            generateMaze();
-            player.x = 1;
-            player.y = 1;
-            
-            updateUI();
-            
-            // Show level up message
-            const message = document.getElementById('gameMessage');
-            message.textContent = `Level ${level}!`;
-            message.style.display = 'block';
-            
-            setTimeout(() => {
-                message.style.display = 'none';
-            }, 2000);
-        }
+        // List of keys that can be disabled
+const disableableKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'Shift'];
+
+// Track disabled keys
+let disabledKeys = {};
+
+// Function to disable a random key after level up
+function disableRandomKey() {
+    // Filter out already disabled keys
+    const availableKeys = disableableKeys.filter(key => !disabledKeys[key]);
+    if (availableKeys.length === 0) return; // All keys disabled
+
+    // Pick a random key to disable
+    const keyToDisable = availableKeys[Math.floor(Math.random() * availableKeys.length)];
+    disabledKeys[keyToDisable] = true;
+
+    // Update UI (optional: visually mark the key as disabled)
+    const keyElem = document.querySelector(`.keyboard-key[data-key="${keyToDisable}"]`);
+    if (keyElem) keyElem.classList.add('disabled');
+
+    // Alert user
+    alert(`The "${keyToDisable}" key is now disabled for the next level!`);
+}
+
+// Call this function at the end of levelUp()
+function levelUp() {
+    level++;
+    score += 100;
+    
+    // Generate new maze for the next level
+    generateMaze();
+    player.x = 1;
+    player.y = 1;
+    
+    updateUI();
+    
+    // Show level up message
+    const message = document.getElementById('gameMessage');
+    message.textContent = `Level ${level}!`;
+    message.style.display = 'block';
+    
+    setTimeout(() => {
+        message.style.display = 'none';
+    }, 2000);
+
+    disableRandomKey();
+}
         
         // Game over
         function gameOver() {
