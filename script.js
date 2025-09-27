@@ -225,9 +225,6 @@
                 ability.classList.remove('active');
             });
             
-            disabledKeys = {};
-            updateOnscreenControls();
-            
             init();
         }
         
@@ -476,33 +473,12 @@
         
         // Handle keyboard input
         function handleKeyDown(e) {
-            if (!gameActive) return;
-
-            let code = e.code;
-
-            // If key is disabled and remapped, use the remapped key instead
-            if (disabledKeys[code] && keyRemap[code]) {
-                code = keyRemap[code];
-            }
-
-            // If key is disabled and not remapped, reduce lives and show alert
-            if (disabledKeys[e.code] && !keyRemap[e.code]) {
-                lives--;
-                updateUI();
-                alert(`The "${e.code}" key is disabled! You lost a life.`);
-                if (lives <= 0) {
-                    gameOver();
-                }
-                return;
-            }
-
-            // Block sacrificed keys
-            if (sacrificedKeys[code]) return;
-
+            if (!gameActive || sacrificedKeys[e.code]) return;
+            
             let newX = player.x;
             let newY = player.y;
-
-            switch(code) {
+            
+            switch(e.code) {
                 case 'ArrowUp':
                     newY--;
                     break;
@@ -517,37 +493,42 @@
                     break;
                 case 'Space':
                     if (activeAbilities.teleport) {
+                        // Teleport to a random empty cell
                         let teleportX, teleportY;
                         do {
                             teleportX = Math.floor(Math.random() * (mazeWidth - 2)) + 1;
                             teleportY = Math.floor(Math.random() * (mazeHeight - 2)) + 1;
                         } while (maze[teleportY][teleportX] !== 0);
-
+                        
                         player.x = teleportX;
                         player.y = teleportY;
                         return;
                     }
                     break;
             }
-
-            if (newX >= 0 && newX < mazeWidth && newY >= 0 && newY < mazeHeight &&
+            
+            // Check if new position is valid (not a wall)
+            if (newX >= 0 && newX < mazeWidth && newY >= 0 && newY < mazeHeight && 
                 maze[newY][newX] !== 1) {
                 player.x = newX;
                 player.y = newY;
-
+                
+                // Check for collision with enemies
                 for (let i = 0; i < enemies.length; i++) {
                     if (enemies[i].x === player.x && enemies[i].y === player.y) {
                         if (activeAbilities.shield) {
+                            // Shield protects from one hit
                             activeAbilities.shield = false;
                             document.getElementById('ability-shield').classList.remove('active');
                         } else {
                             lives--;
                             updateUI();
-
+                            
                             if (lives <= 0) {
                                 gameOver();
                                 return;
                             } else {
+                                // Reset player position
                                 player.x = 1;
                                 player.y = 1;
                             }
@@ -593,79 +574,27 @@
             // For simplicity, we're using timeouts in activateAbility
         }
         
-        // List of keys that can be disabled
-const disableableKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'Shift'];
-
-// Track disabled keys
-let disabledKeys = {};
-
-// Track key remapping
-let keyRemap = {};
-
-// Assign the disabled key to a new unused key
-function remapDisabledKey(disabledKey) {
-    // Find available keys that are not disabled, not sacrificed, not already remapped, and not already used as a remap target
-    const usedTargets = Object.values(keyRemap);
-    const availableKeys = disableableKeys.filter(key =>
-        !disabledKeys[key] &&
-        !sacrificedKeys[key] &&
-        !usedTargets.includes(key) &&
-        key !== disabledKey
-    );
-    if (availableKeys.length === 0) {
-        alert("No available keys to remap!");
-        return;
-    }
-    // Pick the first available key (or random if you prefer)
-    const newKey = availableKeys[0];
-    keyRemap[disabledKey] = newKey;
-    alert(`"${disabledKey}" has been remapped to "${newKey}". Use "${newKey}" to move in that direction.`);
-}
-
-// Function to disable a random key after level up
-function disableRandomKey() {
-    // Filter out already disabled keys
-    const availableKeys = disableableKeys.filter(key => !disabledKeys[key]);
-    if (availableKeys.length === 0) return; // All keys disabled
-
-    // Pick a random key to disable
-    const keyToDisable = availableKeys[Math.floor(Math.random() * availableKeys.length)];
-    disabledKeys[keyToDisable] = true;
-
-    // Update UI (optional: visually mark the key as disabled)
-    const keyElem = document.querySelector(`.keyboard-key[data-key="${keyToDisable}"]`);
-    if (keyElem) keyElem.classList.add('disabled');
-
-    // Alert user
-    alert(`The "${keyToDisable}" key is now disabled for the next level!`);
-    remapDisabledKey(keyToDisable); // Remap the disabled key
-    updateOnscreenControls();
-}
-
-// Call this function at the end of levelUp()
-function levelUp() {
-    level++;
-    score += 100;
-    
-    // Generate new maze for the next level
-    generateMaze();
-    player.x = 1;
-    player.y = 1;
-    
-    updateUI();
-    
-    // Show level up message
-    const message = document.getElementById('gameMessage');
-    message.textContent = `Level ${level}!`;
-    message.style.display = 'block';
-    
-    setTimeout(() => {
-        message.style.display = 'none';
-    }, 2000);
-
-    disableRandomKey();
-    updateOnscreenControls();
-}
+        // Level up the game
+        function levelUp() {
+            level++;
+            score += 100;
+            
+            // Generate new maze for the next level
+            generateMaze();
+            player.x = 1;
+            player.y = 1;
+            
+            updateUI();
+            
+            // Show level up message
+            const message = document.getElementById('gameMessage');
+            message.textContent = `Level ${level}!`;
+            message.style.display = 'block';
+            
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 2000);
+        }
         
         // Game over
         function gameOver() {
@@ -690,110 +619,7 @@ function levelUp() {
             if (progress) progress.style.width = `${progressPercent}%`;
         }
         
-        // Show on-screen controls if any navigation key is disabled
-function updateOnscreenControls() {
-    const onscreen = document.getElementById('onscreen-controls');
-    const anyDisabled = disableableKeys.some(key => disabledKeys[key]);
-    onscreen.style.display = anyDisabled ? 'block' : 'none';
-
-    // Disable buttons for disabled keys
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        const dir = btn.getAttribute('data-dir');
-        btn.disabled = !!disabledKeys[dir];
-    });
-}
-
-// Handle on-screen navigation button clicks
-function handleNavBtnClick(e) {
-    const dir = e.target.getAttribute('data-dir');
-    if (disabledKeys[dir]) {
-        alert(`The "${dir}" key is disabled!`);
-        return;
-    }
-    // Simulate keydown event for navigation
-    handleKeyDown({ code: dir });
-}
-
-// Add event listeners for nav buttons after DOM is loaded
-window.addEventListener('load', () => {
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', handleNavBtnClick);
-    });
-});
-
-// Call updateOnscreenControls whenever keys are disabled
-function disableRandomKey() {
-    // Filter out already disabled keys
-    const availableKeys = disableableKeys.filter(key => !disabledKeys[key]);
-    if (availableKeys.length === 0) return; // All keys disabled
-
-    // Pick a random key to disable
-    const keyToDisable = availableKeys[Math.floor(Math.random() * availableKeys.length)];
-    disabledKeys[keyToDisable] = true;
-
-    // Update UI (optional: visually mark the key as disabled)
-    const keyElem = document.querySelector(`.keyboard-key[data-key="${keyToDisable}"]`);
-    if (keyElem) keyElem.classList.add('disabled');
-
-    // Alert user
-    alert(`The "${keyToDisable}" key is now disabled for the next level!`);
-    remapDisabledKey(keyToDisable); // Remap the disabled key
-    updateOnscreenControls();
-}
-
-// Also call after game reset and level up
-function resetGame() {
-    gameActive = false;
-    document.getElementById('startButton').disabled = false;
-    
-    // Reset sacrificed keys
-    sacrificedKeys = {};
-    activeAbilities = {};
-    
-    // Reset UI for sacrificed keys
-    document.querySelectorAll('.sacrifice-option').forEach(option => {
-        option.classList.remove('sacrificed');
-    });
-    
-    document.querySelectorAll('.keyboard-key').forEach(key => {
-        key.classList.remove('sacrificed');
-    });
-    
-    document.querySelectorAll('.ability').forEach(ability => {
-        ability.classList.remove('active');
-    });
-    
-    disabledKeys = {};
-    updateOnscreenControls();
-    
-    init();
-}
-
-function levelUp() {
-    level++;
-    score += 100;
-    
-    // Generate new maze for the next level
-    generateMaze();
-    player.x = 1;
-    player.y = 1;
-    
-    updateUI();
-    
-    // Show level up message
-    const message = document.getElementById('gameMessage');
-    message.textContent = `Level ${level}!`;
-    message.style.display = 'block';
-    
-    setTimeout(() => {
-        message.style.display = 'none';
-    }, 2000);
-
-    disableRandomKey();
-    updateOnscreenControls();
-}
-
-// Handle window resize
+        // Handle window resize
         window.addEventListener('resize', function() {
             if (canvas) {
                 canvas.width = canvas.parentElement.clientWidth;
