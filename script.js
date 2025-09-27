@@ -62,6 +62,9 @@
                     play.style.display = 'none'
                 });
                 document.getElementById('resetButton').addEventListener('click', resetGame);
+                document.getElementById('resetButton').addEventListener('click', function(){
+                    location.reload()
+                });
 
                 document.querySelectorAll('.sacrifice-option').forEach(option => {
                     option.addEventListener('click', function() {
