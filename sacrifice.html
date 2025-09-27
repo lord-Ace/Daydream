@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sacrifice Quest1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .game-title {
+            font-size: 2.5em;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+            margin-bottom: 10px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .energy-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .energy-bar {
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ffaa44, #44ff44);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 15px rgba(68, 255, 68, 0.5);
+        }
+
+        .energy-text {
+            color: #44ff44;
+            font-weight: bold;
+        }
+
+        .level-info {
+            color: #00ffff;
+            font-size: 1.2em;
+        }
+
+        .game-board {
+            display: grid;
+            gap: 3px;
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            position: relative;
+        }
+
+        .grid-tile {
+            width: 50px;
+            height: 50px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .grid-tile:hover {
+            border-color: #666;
+            transform: scale(1.05);
+        }
+
+        .grid-tile.revealed {
+            background: #004444;
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .grid-tile.puzzle-piece {
+            background: #444400;
+            border-color: #ffff00;
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
+        }
+
+        .grid-tile.collected {
+            background: #004400;
+            border-color: #44ff44;
+            box-shadow: 0 0 15px rgba(68, 255, 68, 0.5);
+        }
+
+        .player-orb {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff, #00ffff);
+            box-shadow: 0 0 20px #00ffff;
+            position: absolute;
+            transition: all 0.3s ease;
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .sacrifice-panel {
+            background: #1a1a1a;
+            border: 2px solid #ff4444;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .sacrifice-title {
+            color: #ff4444;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px #ff4444;
+        }
+
+        .sacrifice-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sacrifice-btn {
+            background: #333;
+            border: 2px solid #666;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .sacrifice-btn:hover {
+            background: #444;
+            border-color: #888;
+            transform: translateY(-2px);
+        }
+
+        .sacrifice-btn.energy {
+            border-color: #ff4444;
+        }
+
+        .sacrifice-btn.energy:hover {
+            background: #442222;
+            border-color: #ff6666;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .puzzle-pieces {
+            color: #ffff00;
+            font-weight: bold;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .victory-screen, .game-over-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .victory-title, .game-over-title {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px currentColor;
+        }
+
+        .victory-title {
+            color: #44ff44;
+        }
+
+        .game-over-title {
+            color: #ff4444;
+        }
+
+        .next-btn, .restart-btn {
+            background: #333;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-family: inherit;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .next-btn:hover, .restart-btn:hover {
+            background: #002222;
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">SACRIFICE QUEST</h1>
+        
+        <div class="stats-bar">
+            <div class="energy-container">
+                <span class="energy-text">SOUL ENERGY:</span>
+                <div class="energy-bar">
+                    <div class="energy-fill" id="energyFill"></div>
+                </div>
+                <span class="energy-text" id="energyText">100</span>
+            </div>
+            
+            <div class="level-info">
+                <span id="levelText">LEVEL 1</span>
+            </div>
+            
+            <div class="progress-container">
+                <span class="puzzle-pieces">PIECES:</span>
+                <span class="puzzle-pieces" id="piecesText">0/3</span>
+            </div>
+        </div>
+
+        <div class="game-board" id="gameBoard">
+            <div class="player-orb" id="playerOrb"></div>
+        </div>
+
+        <div class="sacrifice-panel hidden" id="sacrificePanel">
+            <div class="sacrifice-title">A SACRIFICE IS REQUIRED</div>
+            <div class="sacrifice-options" id="sacrificeOptions">
+                <!-- Dynamic sacrifice options will be added here -->
+            </div>
+        </div>
+
+        <div class="victory-screen hidden" id="victoryScreen">
+            <div class="victory-title">LEVEL COMPLETE</div>
+            <p>Your sacrifices have opened the path forward...</p>
+            <button class="next-btn" onclick="nextLevel()">CONTINUE YOUR JOURNEY</button>
+        </div>
+
+        <div class="game-over-screen hidden" id="gameOverScreen">
+            <div class="game-over-title">YOUR SOUL HAS FADED</div>
+            <p>Sometimes the greatest sacrifice is knowing when to let go...</p>
+            <button class="restart-btn" onclick="restartGame()">BEGIN ANEW</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <p>Click tiles to move • Sacrifice energy to reveal hidden pieces</p>
+        <p>Collect 3 puzzle pieces to advance</p>
+    </div>
+
+    <script>
+        // Game State Management
+        class GameState {
+            constructor() {
+                this.energy = 100;
+                this.maxEnergy = 100;
+                this.level = 1;
+                this.puzzlePieces = 0;
+                this.requiredPieces = 3;
+                this.playerPosition = { x: 2, y: 2 };
+                this.gridSize = { width: 5, height: 5 };
+                this.revealedTiles = new Set();
+                this.puzzleTilePositions = new Set();
+                this.collectedPieces = new Set();
+                this.gameActive = true;
+            }
+
+            reset() {
+                this.energy = 100;
+                this.level = 1;
+                this.puzzlePieces = 0;
+                this.playerPosition = { x: 2, y: 2 };
+                this.revealedTiles.clear();
+                this.puzzleTilePositions.clear();
+                this.collectedPieces.clear();
+                this.gameActive = true;
+            }
+
+            nextLevel() {
+                this.level++;
+                this.puzzlePieces = 0;
+                this.requiredPieces = Math.min(3 + this.level, 8); // Increase difficulty
+                this.playerPosition = { x: 2, y: 2 };
+                this.revealedTiles.clear();
+                this.puzzleTilePositions.clear();
+                this.collectedPieces.clear();
+                
+                // Slight energy recovery between levels, but not full
+                this.energy = Math.min(this.maxEnergy, this.energy + 20);
+            }
+
+            sacrificeEnergy(amount) {
+                this.energy = Math.max(0, this.energy - amount);
+                this.updateUI();
+                
+                if (this.energy <= 0) {
+                    this.gameOver();
+                }
+            }
+
+            gameOver() {
+                this.gameActive = false;
+                document.getElementById('gameOverScreen').classList.remove('hidden');
+            }
+
+            updateUI() {
+                const energyFill = document.getElementById('energyFill');
+                const energyText = document.getElementById('energyText');
+                const levelText = document.getElementById('levelText');
+                const piecesText = document.getElementById('piecesText');
+
+                const energyPercentage = (this.energy / this.maxEnergy) * 100;
+                energyFill.style.width = energyPercentage + '%';
+                energyText.textContent = this.energy;
+                levelText.textContent = `LEVEL ${this.level}`;
+                piecesText.textContent = `${this.puzzlePieces}/${this.requiredPieces}`;
+
+                // Visual feedback for low energy
+                if (this.energy < 30) {
+                    energyFill.style.boxShadow = '0 0 15px rgba(255, 68, 68, 0.8)';
+                } else if (this.energy < 60) {
+                    energyFill.style.boxShadow = '0 0 15px rgba(255, 170, 68, 0.6)';
+                } else {
+                    energyFill.style.boxShadow = '0 0 15px rgba(68, 255, 68, 0.5)';
+                }
+            }
+        }
+
+        // Game Logic
+        class SacrificeQuest {
+            constructor() {
+                this.state = new GameState();
+                this.initializeGame();
+            }
+
+            initializeGame() {
+                this.createGameBoard();
+                this.generatePuzzlePieces();
+                this.updatePlayerPosition();
+                this.state.updateUI();
+            }
+
+            createGameBoard() {
+                const gameBoard = document.getElementById('gameBoard');
+                gameBoard.innerHTML = '<div class="player-orb" id="playerOrb"></div>';
+                
+                // Set grid template
+                gameBoard.style.gridTemplateColumns = `repeat(${this.state.gridSize.width}, 50px)`;
+                gameBoard.style.gridTemplateRows = `repeat(${this.state.gridSize.height}, 50px)`;
+
+                // Create grid tiles
+                for (let y = 0; y < this.state.gridSize.height; y++) {
+                    for (let x = 0; x < this.state.gridSize.width; x++) {
+                        const tile = document.createElement('div');
+                        tile.className = 'grid-tile';
+                        tile.dataset.x = x;
+                        tile.dataset.y = y;
+                        tile.addEventListener('click', () => this.handleTileClick(x, y));
+                        gameBoard.appendChild(tile);
+                    }
+                }
+            }
+
+            generatePuzzlePieces() {
+                this.state.puzzleTilePositions.clear();
+                
+                // Generate random positions for puzzle pieces
+                while (this.state.puzzleTilePositions.size < this.state.requiredPieces + 2) {
+                    const x = Math.floor(Math.random() * this.state.gridSize.width);
+                    const y = Math.floor(Math.random() * this.state.gridSize.height);
+                    
+                    // Don't place on starting position
+                    if (x !== this.state.playerPosition.x || y !== this.state.playerPosition.y) {
+                        this.state.puzzleTilePositions.add(`${x},${y}`);
+                    }
+                }
+            }
+
+            handleTileClick(x, y) {
+                if (!this.state.gameActive) return;
+
+                const distance = Math.abs(x - this.state.playerPosition.x) + Math.abs(y - this.state.playerPosition.y);
+                
+                if (distance === 1) {
+                    // Move to adjacent tile
+                    this.movePlayer(x, y);
+                } else {
+                    // Try to reveal distant tile (requires sacrifice)
+                    this.offerSacrifice(x, y);
+                }
+            }
+
+            movePlayer(x, y) {
+                this.state.playerPosition = { x, y };
+                this.updatePlayerPosition();
+                this.checkTileInteraction(x, y);
+            }
+
+            updatePlayerPosition() {
+                const playerOrb = document.getElementById('playerOrb');
+                const tileSize = 50;
+                const gap = 3;
+                
+                const left = (this.state.playerPosition.x * (tileSize + gap)) + (tileSize / 2) - 15;
+                const top = (this.state.playerPosition.y * (tileSize + gap)) + (tileSize / 2) - 15;
+                
+                playerOrb.style.left = left + 'px';
+                playerOrb.style.top = top + 'px';
+
+                // Adjust orb size based on energy
+                const scale = 0.7 + (this.state.energy / this.state.maxEnergy) * 0.3;
+                playerOrb.style.transform = `scale(${scale})`;
+            }
+
+            checkTileInteraction(x, y) {
+                const tileKey = `${x},${y}`;
+                const tile = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                
+                // Reveal tile
+                if (!this.state.revealedTiles.has(tileKey)) {
+                    this.state.revealedTiles.add(tileKey);
+                    tile.classList.add('revealed');
+                }
+
+                // Check for puzzle piece
+                if (this.state.puzzleTilePositions.has(tileKey) && !this.state.collectedPieces.has(tileKey)) {
+                    this.collectPuzzlePiece(x, y, tile);
+                }
+            }
+
+            collectPuzzlePiece(x, y, tile) {
+                const tileKey = `${x},${y}`;
+                this.state.collectedPieces.add(tileKey);
+                this.state.puzzlePieces++;
+                
+                tile.classList.remove('puzzle-piece');
+                tile.classList.add('collected');
+                
+                this.state.updateUI();
+
+                // Check for level completion
+                if (this.state.puzzlePieces >= this.state.requiredPieces) {
+                    this.levelComplete();
+                }
+            }
+
+            offerSacrifice(targetX, targetY) {
+                if (this.state.energy < 15) {
+                    // Not enough energy for any sacrifice
+                    this.showMessage("Your soul is too weak for further sacrifice...");
+                    return;
+                }
+
+                const sacrificePanel = document.getElementById('sacrificePanel');
+                const sacrificeOptions = document.getElementById('sacrificeOptions');
+                
+                sacrificeOptions.innerHTML = '';
+
+                // Option 1: Sacrifice energy to reveal tile
+                const revealOption = document.createElement('button');
+                revealOption.className = 'sacrifice-btn energy';
+                revealOption.textContent = 'Sacrifice 15 Energy - Reveal Distant Tile';
+                revealOption.onclick = () => {
+                    this.performSacrifice('energy', 15, () => {
+                        this.revealTile(targetX, targetY);
+                        this.movePlayer(targetX, targetY);
+                    });
+                };
+                sacrificeOptions.appendChild(revealOption);
+
+                // Option 2: Sacrifice more energy to reveal multiple tiles
+                if (this.state.energy >= 25) {
+                    const revealMultipleOption = document.createElement('button');
+                    revealMultipleOption.className = 'sacrifice-btn energy';
+                    revealMultipleOption.textContent = 'Sacrifice 25 Energy - Reveal 3x3 Area';
+                    revealMultipleOption.onclick = () => {
+                        this.performSacrifice('energy', 25, () => {
+                            this.revealArea(targetX, targetY, 1);
+                            this.movePlayer(targetX, targetY);
+                        });
+                    };
+                    sacrificeOptions.appendChild(revealMultipleOption);
+                }
+
+                // Cancel option
+                const cancelOption = document.createElement('button');
+                cancelOption.className = 'sacrifice-btn';
+                cancelOption.textContent = 'Preserve Your Soul (Cancel)';
+                cancelOption.onclick = () => {
+                    sacrificePanel.classList.add('hidden');
+                };
+                sacrificeOptions.appendChild(cancelOption);
+
+                sacrificePanel.classList.remove('hidden');
+            }
+
+            performSacrifice(type, amount, callback) {
+                document.getElementById('sacrificePanel').classList.add('hidden');
+                
+                if (type === 'energy') {
+                    this.state.sacrificeEnergy(amount);
+                }
+                
+                callback();
+            }
+
+            revealTile(x, y) {
+                const tileKey = `${x},${y}`;
+                const tile = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                
+                if (tile && !this.state.revealedTiles.has(tileKey)) {
+                    this.state.revealedTiles.add(tileKey);
+                    tile.classList.add('revealed');
+                    
+                    // Check if it's a puzzle piece
+                    if (this.state.puzzleTilePositions.has(tileKey)) {
+                        tile.classList.add('puzzle-piece');
+                    }
+                }
+            }
+
+            revealArea(centerX, centerY, radius) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    for (let dy = -radius; dy <= radius; dy++) {
+                        const x = centerX + dx;
+                        const y = centerY + dy;
+                        
+                        if (x >= 0 && x < this.state.gridSize.width && 
+                            y >= 0 && y < this.state.gridSize.height) {
+                            this.revealTile(x, y);
+                        }
+                    }
+                }
+            }
+
+            showMessage(text) {
+                // Simple message system - could be expanded
+                console.log(text);
+            }
+
+            levelComplete() {
+                document.getElementById('victoryScreen').classList.remove('hidden');
+            }
+
+            nextLevel() {
+                document.getElementById('victoryScreen').classList.add('hidden');
+                this.state.nextLevel();
+                this.initializeGame();
+            }
+
+            restart() {
+                document.getElementById('gameOverScreen').classList.add('hidden');
+                this.state.reset();
+                this.initializeGame();
+            }
+        }
+
+        // Global game instance
+        let game;
+
+        // Initialize game when page loads
+        window.onload = () => {
+            game = new SacrificeQuest();
+        };
+
+        // Global functions for UI buttons
+        function nextLevel() {
+            game.nextLevel();
+        }
+
+        function restartGame() {
+            game.restart();
+        }
+
+        // Keyboard controls (optional enhancement)
+        document.addEventListener('keydown', (e) => {
+            if (!game || !game.state.gameActive) return;
+
+            let newX = game.state.playerPosition.x;
+            let newY = game.state.playerPosition.y;
+
+            switch(e.key) {
+                case 'ArrowUp': newY = Math.max(0, newY - 1); break;
+                case 'ArrowDown': newY = Math.min(game.state.gridSize.height - 1, newY + 1); break;
+                case 'ArrowLeft': newX = Math.max(0, newX - 1); break;
+                case 'ArrowRight': newX = Math.min(game.state.gridSize.width - 1, newX + 1); break;
+                default: return;
+            }
+
+            e.preventDefault();
+            game.movePlayer(newX, newY);
+        });
+    </script>
+</body>
+</html>
