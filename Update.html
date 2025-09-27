@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sacrifice Keys: Maze Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a5b1c2;
+            margin-bottom: 20px;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        
+        .player-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(30, 30, 60, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .sacrifice-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(30, 30, 60, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #feca57;
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 5px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #a5b1c2;
+        }
+        
+        .abilities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .ability {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .ability.active {
+            background: rgba(255, 107, 107, 0.3);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .ability-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .sacrifice-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .sacrifice-option {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .sacrifice-option:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: translateY(-5px);
+        }
+        
+        .sacrifice-option.sacrificed {
+            background: rgba(100, 100, 100, 0.5);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .key {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #feca57;
+            margin-bottom: 5px;
+        }
+        
+        .sacrifice-effect {
+            font-size: 0.9rem;
+            color: #a5b1c2;
+        }
+        
+        .maze-container {
+            width: 100%;
+            max-width: 800px;
+            height: 500px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        #mazeCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            font-size: 1rem;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        button:disabled {
+            background: #555;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.5rem;
+            color: #feca57;
+            display: none;
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+        }
+        
+        .instructions {
+            background: rgba(30, 30, 60, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .instructions h3 {
+            color: #feca57;
+            margin-bottom: 10px;
+        }
+        
+        .instructions p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 15px;
+            max-width: 600px;
+        }
+        
+        .keyboard-key {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .keyboard-key.sacrificed {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(0.9);
+            opacity: 0.7;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .mini-map {
+            width: 150px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #feca57;
+            border-radius: 8px;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 5;
+        }
+        
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .sacrifice-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .mini-map {
+                width: 100px;
+                height: 100px;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sacrifice Keys: Maze Challenge</h1>
+            <p class="subtitle">Navigate the maze. Sacrifice keys to survive.</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="player-section">
+                <h2 class="section-title">Player Status</h2>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="score">0</div>
+                        <div class="stat-label">Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="level">1</div>
+                        <div class="stat-label">Level</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="lives">3</div>
+                        <div class="stat-label">Lives</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="sacrifices">0</div>
+                        <div class="stat-label">Sacrifices</div>
+                    </div>
+                </div>
+                
+                <h3 class="section-title">Active Abilities</h3>
+                <div class="abilities">
+                    <div class="ability" id="ability-speed">
+                        <div class="ability-icon">⚡</div>
+                        <div>Speed Boost</div>
+                    </div>
+                    <div class="ability" id="ability-shield">
+                        <div class="ability-icon">🛡️</div>
+                        <div>Shield</div>
+                    </div>
+                    <div class="ability" id="ability-magnet">
+                        <div class="ability-icon">🧲</div>
+                        <div>Magnet</div>
+                    </div>
+                    <div class="ability" id="ability-vision">
+                        <div class="ability-icon">👁️</div>
+                        <div>X-Ray Vision</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sacrifice-section">
+                <h2 class="section-title">Sacrifice Options</h2>
+                <p>Sacrifice a key to gain special abilities:</p>
+                
+                <div class="sacrifice-options">
+                    <div class="sacrifice-option" data-key="ArrowUp" data-ability="speed">
+                        <div class="key">↑</div>
+                        <div class="sacrifice-effect">Speed Boost</div>
+                    </div>
+                    <div class="sacrifice-option" data-key="ArrowDown" data-ability="shield">
+                        <div class="key">↓</div>
+                        <div class="sacrifice-effect">Shield</div>
+                    </div>
+                    <div class="sacrifice-option" data-key="ArrowLeft" data-ability="magnet">
+                        <div class="key">←</div>
+                        <div class="sacrifice-effect">Magnet</div>
+                    </div>
+                    <div class="sacrifice-option" data-key="ArrowRight" data-ability="vision">
+                        <div class="key">→</div>
+                        <div class="sacrifice-effect">X-Ray Vision</div>
+                    </div>
+                    <div class="sacrifice-option" data-key="Space" data-ability="teleport">
+                        <div class="key">Space</div>
+                        <div class="sacrifice-effect">Teleport</div>
+                    </div>
+                    <div class="sacrifice-option" data-key="Shift" data-ability="freeze">
+                        <div class="key">Shift</div>
+                        <div class="sacrifice-effect">Freeze Enemies</div>
+                    </div>
+                </div>
+                
+                <div class="keyboard">
+                    <div class="keyboard-key" data-key="ArrowUp">↑</div>
+                    <div class="keyboard-key" data-key="ArrowLeft">←</div>
+                    <div class="keyboard-key" data-key="ArrowDown">↓</div>
+                    <div class="keyboard-key" data-key="ArrowRight">→</div>
+                    <div class="keyboard-key" data-key="Space">Space</div>
+                    <div class="keyboard-key" data-key="Shift">Shift</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="maze-container">
+            <canvas id="mazeCanvas"></canvas>
+            <div class="mini-map" id="miniMap"></div>
+            <div class="message" id="gameMessage">Game Over</div>
+        </div>
+        
+        <div class="controls">
+            <button id="startButton">Start Game</button>
+            <button id="resetButton">Reset Game</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play</h3>
+            <p>Use the arrow keys to navigate through the maze. Collect points and reach the exit to advance to the next level.</p>
+            <p>When you need an advantage, sacrifice a key to gain special abilities. Once sacrificed, that key can no longer be used!</p>
+            <p>Each level features a more complex maze. How far can you go with fewer controls?</p>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let canvas, ctx, miniMapCtx;
+        let gameActive = false;
+        let score = 0;
+        let level = 1;
+        let lives = 3;
+        let sacrifices = 0;
+        let player;
+        let maze = [];
+        let mazeWidth = 25;
+        let mazeHeight = 25;
+        let cellSize = 20;
+        let points = [];
+        let enemies = [];
+        let exit;
+        let sacrificedKeys = {};
+        let activeAbilities = {};
+        
+        // Initialize game
+        function init() {
+            canvas = document.getElementById('mazeCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // Set up mini-map
+            const miniMap = document.getElementById('miniMap');
+            miniMapCtx = miniMap.getContext('2d');
+            
+            // Adjust cell size based on canvas size
+            cellSize = Math.min(Math.floor(canvas.width / mazeWidth), Math.floor(canvas.height / mazeHeight));
+            
+            // Initialize player
+            player = {
+                x: 1,
+                y: 1,
+                width: cellSize * 0.7,
+                height: cellSize * 0.7,
+                color: '#ff6b6b',
+                speed: 1
+            };
+            
+            // Generate initial maze
+            generateMaze();
+            
+            // Set up event listeners
+            document.getElementById('startButton').addEventListener('click', startGame);
+            document.getElementById('resetButton').addEventListener('click', resetGame);
+            
+            // Set up sacrifice options
+            document.querySelectorAll('.sacrifice-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    if (!gameActive) return;
+                    
+                    const key = this.getAttribute('data-key');
+                    const ability = this.getAttribute('data-ability');
+                    
+                    if (!sacrificedKeys[key]) {
+                        sacrificeKey(key, ability);
+                        this.classList.add('sacrificed');
+                    }
+                });
+            });
+            
+            // Set up keyboard controls
+            document.addEventListener('keydown', handleKeyDown);
+            
+            // Draw initial state
+            draw();
+        }
+        
+        // Generate a random maze using Depth-First Search algorithm
+        function generateMaze() {
+            // Initialize maze with walls
+            maze = [];
+            for (let y = 0; y < mazeHeight; y++) {
+                maze[y] = [];
+                for (let x = 0; x < mazeWidth; x++) {
+                    maze[y][x] = 1; // 1 represents a wall
+                }
+            }
+            
+            // Stack for DFS
+            let stack = [];
+            
+            // Start from a random cell (ensuring it's odd to create proper paths)
+            let startX = 1;
+            let startY = 1;
+            maze[startY][startX] = 0; // 0 represents a path
+            
+            stack.push([startX, startY]);
+            
+            // DFS algorithm to generate maze
+            while (stack.length > 0) {
+                let [x, y] = stack[stack.length - 1];
+                
+                // Find all unvisited neighbors
+                let neighbors = [];
+                
+                // Check all four directions
+                if (y - 2 > 0 && maze[y - 2][x] === 1) neighbors.push([x, y - 2, x, y - 1]);
+                if (y + 2 < mazeHeight - 1 && maze[y + 2][x] === 1) neighbors.push([x, y + 2, x, y + 1]);
+                if (x - 2 > 0 && maze[y][x - 2] === 1) neighbors.push([x - 2, y, x - 1, y]);
+                if (x + 2 < mazeWidth - 1 && maze[y][x + 2] === 1) neighbors.push([x + 2, y, x + 1, y]);
+                
+                if (neighbors.length > 0) {
+                    // Choose a random neighbor
+                    let [nx, ny, wx, wy] = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    
+                    // Remove the wall between current cell and chosen neighbor
+                    maze[wy][wx] = 0;
+                    maze[ny][nx] = 0;
+                    
+                    // Push the neighbor to the stack
+                    stack.push([nx, ny]);
+                } else {
+                    // Backtrack
+                    stack.pop();
+                }
+            }
+            
+            // Create exit at bottom-right corner
+            exit = { x: mazeWidth - 2, y: mazeHeight - 2 };
+            maze[exit.y][exit.x] = 2; // 2 represents exit
+            
+            // Generate points randomly in the maze
+            points = [];
+            for (let i = 0; i < 10 + level * 2; i++) {
+                let pointX, pointY;
+                do {
+                    pointX = Math.floor(Math.random() * (mazeWidth - 2)) + 1;
+                    pointY = Math.floor(Math.random() * (mazeHeight - 2)) + 1;
+                } while (maze[pointY][pointX] !== 0 || (pointX === 1 && pointY === 1));
+                
+                points.push({
+                    x: pointX,
+                    y: pointY,
+                    collected: false
+                });
+            }
+            
+            // Generate enemies for higher levels
+            enemies = [];
+            if (level > 1) {
+                for (let i = 0; i < level - 1; i++) {
+                    let enemyX, enemyY;
+                    do {
+                        enemyX = Math.floor(Math.random() * (mazeWidth - 2)) + 1;
+                        enemyY = Math.floor(Math.random() * (mazeHeight - 2)) + 1;
+                    } while (maze[enemyY][enemyX] !== 0 || 
+                            (enemyX === 1 && enemyY === 1) ||
+                            (enemyX === exit.x && enemyY === exit.y));
+                    
+                    enemies.push({
+                        x: enemyX,
+                        y: enemyY,
+                        direction: Math.floor(Math.random() * 4), // 0: up, 1: right, 2: down, 3: left
+                        moveCounter: 0
+                    });
+                }
+            }
+        }
+        
+        // Start the game
+        function startGame() {
+            if (gameActive) return;
+            
+            gameActive = true;
+            document.getElementById('startButton').disabled = true;
+            document.getElementById('gameMessage').style.display = 'none';
+            
+            // Reset game state
+            score = 0;
+            level = 1;
+            lives = 3;
+            sacrifices = 0;
+            
+            generateMaze();
+            player.x = 1;
+            player.y = 1;
+            
+            updateUI();
+            gameLoop();
+        }
+        
+        // Reset the game
+        function resetGame() {
+            gameActive = false;
+            document.getElementById('startButton').disabled = false;
+            
+            // Reset sacrificed keys
+            sacrificedKeys = {};
+            activeAbilities = {};
+            
+            // Reset UI for sacrificed keys
+            document.querySelectorAll('.sacrifice-option').forEach(option => {
+                option.classList.remove('sacrificed');
+            });
+            
+            document.querySelectorAll('.keyboard-key').forEach(key => {
+                key.classList.remove('sacrificed');
+            });
+            
+            document.querySelectorAll('.ability').forEach(ability => {
+                ability.classList.remove('active');
+            });
+            
+            init();
+        }
+        
+        // Main game loop
+        function gameLoop() {
+            if (!gameActive) return;
+            
+            update();
+            draw();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Update game state
+        function update() {
+            // Update player position based on active abilities
+            if (activeAbilities.speed) {
+                player.speed = 2;
+            } else {
+                player.speed = 1;
+            }
+            
+            // Check if player reached the exit
+            if (player.x === exit.x && player.y === exit.y) {
+                levelUp();
+                return;
+            }
+            
+            // Check for point collection
+            for (let i = 0; i < points.length; i++) {
+                if (!points[i].collected && player.x === points[i].x && player.y === points[i].y) {
+                    points[i].collected = true;
+                    score += 10;
+                    updateUI();
+                }
+            }
+            
+            // Update enemies
+            if (!activeAbilities.freeze) {
+                for (let i = 0; i < enemies.length; i++) {
+                    enemies[i].moveCounter++;
+                    
+                    // Move enemy every 10 frames
+                    if (enemies[i].moveCounter >= 10) {
+                        enemies[i].moveCounter = 0;
+                        
+                        // Try to move in current direction, if blocked, change direction
+                        let newX = enemies[i].x;
+                        let newY = enemies[i].y;
+                        
+                        switch (enemies[i].direction) {
+                            case 0: newY--; break; // Up
+                            case 1: newX++; break; // Right
+                            case 2: newY++; break; // Down
+                            case 3: newX--; break; // Left
+                        }
+                        
+                        // Check if new position is valid (not a wall)
+                        if (newX >= 0 && newX < mazeWidth && newY >= 0 && newY < mazeHeight && 
+                            maze[newY][newX] !== 1) {
+                            enemies[i].x = newX;
+                            enemies[i].y = newY;
+                        } else {
+                            // Change direction if blocked
+                            enemies[i].direction = Math.floor(Math.random() * 4);
+                        }
+                        
+                        // Check for collision with player
+                        if (enemies[i].x === player.x && enemies[i].y === player.y) {
+                            if (activeAbilities.shield) {
+                                // Shield protects from one hit
+                                activeAbilities.shield = false;
+                                document.getElementById('ability-shield').classList.remove('active');
+                            } else {
+                                lives--;
+                                updateUI();
+                                
+                                if (lives <= 0) {
+                                    gameOver();
+                                    return;
+                                } else {
+                                    // Reset player position
+                                    player.x = 1;
+                                    player.y = 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Update ability durations
+            updateAbilities();
+        }
+        
+        // Draw everything
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#0f3460';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculate offset to center the maze on the player
+            const offsetX = (canvas.width - mazeWidth * cellSize) / 2;
+            const offsetY = (canvas.height - mazeHeight * cellSize) / 2;
+            
+            // Draw maze
+            for (let y = 0; y < mazeHeight; y++) {
+                for (let x = 0; x < mazeWidth; x++) {
+                    const cellX = offsetX + x * cellSize;
+                    const cellY = offsetY + y * cellSize;
+                    
+                    if (maze[y][x] === 1) {
+                        // Draw wall
+                        ctx.fillStyle = '#2c3e50';
+                        ctx.fillRect(cellX, cellY, cellSize, cellSize);
+                        
+                        // Add texture to walls
+                        ctx.fillStyle = '#34495e';
+                        ctx.fillRect(cellX + 2, cellY + 2, cellSize - 4, cellSize - 4);
+                    } else if (maze[y][x] === 2) {
+                        // Draw exit
+                        ctx.fillStyle = '#feca57';
+                        ctx.fillRect(cellX, cellY, cellSize, cellSize);
+                        
+                        ctx.fillStyle = '#1a1a2e';
+                        ctx.font = 'bold ' + (cellSize * 0.6) + 'px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('EXIT', cellX + cellSize/2, cellY + cellSize/2);
+                    } else {
+                        // Draw path
+                        ctx.fillStyle = '#1a1a2e';
+                        ctx.fillRect(cellX, cellY, cellSize, cellSize);
+                    }
+                }
+            }
+            
+            // Draw points
+            for (let i = 0; i < points.length; i++) {
+                if (!points[i].collected) {
+                    const pointX = offsetX + points[i].x * cellSize + cellSize/2;
+                    const pointY = offsetY + points[i].y * cellSize + cellSize/2;
+                    
+                    ctx.fillStyle = '#feca57';
+                    ctx.beginPath();
+                    ctx.arc(pointX, pointY, cellSize/4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Add glow effect if magnet ability is active
+                    if (activeAbilities.magnet) {
+                        ctx.shadowColor = '#feca57';
+                        ctx.shadowBlur = 10;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            }
+            
+            // Draw enemies
+            for (let i = 0; i < enemies.length; i++) {
+                const enemyX = offsetX + enemies[i].x * cellSize + cellSize/2;
+                const enemyY = offsetY + enemies[i].y * cellSize + cellSize/2;
+                
+                ctx.fillStyle = '#ff6b6b';
+                ctx.beginPath();
+                ctx.arc(enemyX, enemyY, cellSize/3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw enemy eyes
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(enemyX - cellSize/8, enemyY - cellSize/8, cellSize/10, 0, Math.PI * 2);
+                ctx.arc(enemyX + cellSize/8, enemyY - cellSize/8, cellSize/10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw player
+            const playerX = offsetX + player.x * cellSize + cellSize/2;
+            const playerY = offsetY + player.y * cellSize + cellSize/2;
+            
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(playerX, playerY, cellSize/3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw shield if active
+            if (activeAbilities.shield) {
+                ctx.strokeStyle = '#feca57';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(playerX, playerY, cellSize/2, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Draw mini-map
+            drawMiniMap();
+        }
+        
+        // Draw the mini-map
+        function drawMiniMap() {
+            const miniMapSize = 150;
+            const cellSizeMini = miniMapSize / mazeWidth;
+            
+            // Clear mini-map
+            miniMapCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            miniMapCtx.fillRect(0, 0, miniMapSize, miniMapSize);
+            
+            // Draw maze on mini-map
+            for (let y = 0; y < mazeHeight; y++) {
+                for (let x = 0; x < mazeWidth; x++) {
+                    if (maze[y][x] === 1) {
+                        miniMapCtx.fillStyle = '#2c3e50';
+                    } else if (maze[y][x] === 2) {
+                        miniMapCtx.fillStyle = '#feca57';
+                    } else {
+                        miniMapCtx.fillStyle = '#1a1a2e';
+                    }
+                    
+                    miniMapCtx.fillRect(x * cellSizeMini, y * cellSizeMini, cellSizeMini, cellSizeMini);
+                }
+            }
+            
+            // Draw player on mini-map
+            miniMapCtx.fillStyle = '#ff6b6b';
+            miniMapCtx.beginPath();
+            miniMapCtx.arc(player.x * cellSizeMini + cellSizeMini/2, 
+                          player.y * cellSizeMini + cellSizeMini/2, 
+                          cellSizeMini/2, 0, Math.PI * 2);
+            miniMapCtx.fill();
+            
+            // Draw enemies on mini-map
+            miniMapCtx.fillStyle = '#ff6b6b';
+            for (let i = 0; i < enemies.length; i++) {
+                miniMapCtx.beginPath();
+                miniMapCtx.arc(enemies[i].x * cellSizeMini + cellSizeMini/2, 
+                              enemies[i].y * cellSizeMini + cellSizeMini/2, 
+                              cellSizeMini/3, 0, Math.PI * 2);
+                miniMapCtx.fill();
+            }
+            
+            // Draw exit on mini-map
+            miniMapCtx.fillStyle = '#feca57';
+            miniMapCtx.fillRect(exit.x * cellSizeMini, exit.y * cellSizeMini, cellSizeMini, cellSizeMini);
+        }
+        
+        // Handle keyboard input
+        function handleKeyDown(e) {
+            if (!gameActive || sacrificedKeys[e.code]) return;
+            
+            let newX = player.x;
+            let newY = player.y;
+            
+            switch(e.code) {
+                case 'ArrowUp':
+                    newY--;
+                    break;
+                case 'ArrowDown':
+                    newY++;
+                    break;
+                case 'ArrowLeft':
+                    newX--;
+                    break;
+                case 'ArrowRight':
+                    newX++;
+                    break;
+                case 'Space':
+                    if (activeAbilities.teleport) {
+                        // Teleport to a random empty cell
+                        let teleportX, teleportY;
+                        do {
+                            teleportX = Math.floor(Math.random() * (mazeWidth - 2)) + 1;
+                            teleportY = Math.floor(Math.random() * (mazeHeight - 2)) + 1;
+                        } while (maze[teleportY][teleportX] !== 0);
+                        
+                        player.x = teleportX;
+                        player.y = teleportY;
+                        return;
+                    }
+                    break;
+            }
+            
+            // Check if new position is valid (not a wall)
+            if (newX >= 0 && newX < mazeWidth && newY >= 0 && newY < mazeHeight && 
+                maze[newY][newX] !== 1) {
+                player.x = newX;
+                player.y = newY;
+                
+                // Check for collision with enemies
+                for (let i = 0; i < enemies.length; i++) {
+                    if (enemies[i].x === player.x && enemies[i].y === player.y) {
+                        if (activeAbilities.shield) {
+                            // Shield protects from one hit
+                            activeAbilities.shield = false;
+                            document.getElementById('ability-shield').classList.remove('active');
+                        } else {
+                            lives--;
+                            updateUI();
+                            
+                            if (lives <= 0) {
+                                gameOver();
+                                return;
+                            } else {
+                                // Reset player position
+                                player.x = 1;
+                                player.y = 1;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Sacrifice a key to gain an ability
+        function sacrificeKey(key, ability) {
+            sacrificedKeys[key] = true;
+            sacrifices++;
+            
+            // Update UI for sacrificed key
+            document.querySelector(`.keyboard-key[data-key="${key}"]`).classList.add('sacrificed');
+            
+            // Activate ability
+            activateAbility(ability);
+            
+            updateUI();
+        }
+        
+        // Activate an ability
+        function activateAbility(ability) {
+            activeAbilities[ability] = true;
+            
+            // Update UI for active ability
+            document.getElementById(`ability-${ability}`).classList.add('active');
+            
+            // Set ability duration (15 seconds)
+            setTimeout(() => {
+                activeAbilities[ability] = false;
+                document.getElementById(`ability-${ability}`).classList.remove('active');
+            }, 15000);
+        }
+        
+        // Update ability durations
+        function updateAbilities() {
+            // This would track ability durations if we had multiple active
+            // For simplicity, we're using timeouts in activateAbility
+        }
+        
+        // Level up the game
+        function levelUp() {
+            level++;
+            score += 100;
+            
+            // Generate new maze for the next level
+            generateMaze();
+            player.x = 1;
+            player.y = 1;
+            
+            updateUI();
+            
+            // Show level up message
+            const message = document.getElementById('gameMessage');
+            message.textContent = `Level ${level}!`;
+            message.style.display = 'block';
+            
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 2000);
+        }
+        
+        // Game over
+        function gameOver() {
+            gameActive = false;
+            document.getElementById('startButton').disabled = false;
+            
+            const message = document.getElementById('gameMessage');
+            message.textContent = `Game Over! Final Score: ${score}`;
+            message.style.display = 'block';
+        }
+        
+        // Update the UI
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('lives').textContent = lives;
+            document.getElementById('sacrifices').textContent = sacrifices;
+            
+            // Update progress bar for next level
+            const progress = document.querySelector('.progress');
+            const progressPercent = (score % 100) / 100 * 100;
+            progress.style.width = `${progressPercent}%`;
+        }
+        
+        // Initialize the game when the page loads
+        window.addEventListener('load', init);
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (canvas) {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
+                // Regenerate maze with new cell size
+                cellSize = Math.min(Math.floor(canvas.width / mazeWidth), Math.floor(canvas.height / mazeHeight));
+            }
+        });
+    </script>
+</body>
+</html>
