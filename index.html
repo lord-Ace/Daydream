@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sacrifice Keys: Maze Challenge</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header id="head">
+            <h1>Sacrifice Keys: Maze Challenge</h1>
+            <p class="subtitle">Navigate the maze. Sacrifice keys to survive.</p>
+        </header>
+        
+        <div class="game-area" id="gameArea">
+            <div class="player-section">
+                <h2 class="section-title">Player Status</h2>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="score">0</div>
+                        <div class="stat-label">Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="level">1</div>
+                        <div class="stat-label">Level</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="lives">3</div>
+                        <div class="stat-label">Lives</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="sacrifices">0</div>
+                        <div class="stat-label">Sacrifices</div>
+                    </div>
+                </div>
+                
+                <h3 class="section-title">Active Abilities</h3>
+                <div class="abilities">
+                    <div class="ability" id="ability-speed">
+                        <div class="ability-icon">⚡</div>
+                        <div>Speed Boost</div>
+                    </div>
+                    <div class="ability" id="ability-shield">
+                        <div class="ability-icon">🛡️</div>
+                        <div>Shield</div>
+                    </div>
+                    <div class="ability" id="ability-magnet">
+                        <div class="ability-icon">🧲</div>
+                        <div>Magnet</div>
+                    </div>
+                    <div class="ability" id="ability-vision">
+                        <div class="ability-icon">👁️</div>
+                        <div>X-Ray Vision</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sacrifice-section">
+                <h2 class="section-title">Sacrifice Options</h2>
+                <p>Sacrifice a key to gain special abilities:</p>
+                
+                <div class="sacrifice-options">
+                    <div class="sacrifice-option" data-key="ArrowUp" data-ability="speed">
+                        <div class="key">↑</div>
+                        <div class="sacrifice-effect">Speed Boost</div>
+                    </div>
+                    <div class="sacrifice-option" data-key="ArrowDown" data-ability="shield">
+                        <div class="key">↓</div>
+                        <div class="sacrifice-effect">Shield</div>
+                    </div>
+                    <div class="sacrifice-option" data-key="ArrowLeft" data-ability="magnet">
+                        <div class="key">←</div>
+                        <div class="sacrifice-effect">Magnet</div>
+                    </div>
+                    <div class="sacrifice-option" data-key="ArrowRight" data-ability="vision">
+                        <div class="key">→</div>
+                        <div class="sacrifice-effect">X-Ray Vision</div>
+                    </div>
+                    <div class="sacrifice-option" data-key="Space" data-ability="teleport">
+                        <div class="key">Space</div>
+                        <div class="sacrifice-effect">Teleport</div>
+                    </div>
+                    <div class="sacrifice-option" data-key="Shift" data-ability="freeze">
+                        <div class="key">Shift</div>
+                        <div class="sacrifice-effect">Freeze Enemies</div>
+                    </div>
+                </div>
+                
+                <div class="keyboard">
+                    <div class="keyboard-key" data-key="ArrowUp">↑</div>
+                    <div class="keyboard-key" data-key="ArrowLeft">←</div>
+                    <div class="keyboard-key" data-key="ArrowDown">↓</div>
+                    <div class="keyboard-key" data-key="ArrowRight">→</div>
+                    <div class="keyboard-key" data-key="Space">Space</div>
+                    <div class="keyboard-key" data-key="Shift">Shift</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="maze-container">
+            <canvas id="mazeCanvas"></canvas>
+            <canvas class="mini-map" id="miniMap"></canvas>
+            <div class="message" id="gameMessage">Game Over</div>
+        </div>
+        
+        <div class="controls">
+            <button id="startButton">Start Game</button>
+            <button id="resetButton">Reset Game</button>
+        </div>
+        
+        <div class="instructions" id="play">
+            <h3>How to Play</h3>
+            <p>Use the arrow keys to navigate through the maze. Collect points and reach the exit to advance to the next level.</p>
+            <p>When you need an advantage, sacrifice a key to gain special abilities. Once sacrificed, that key can no longer be used!</p>
+            <p>Each level features a more complex maze. How far can you go with fewer controls?</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

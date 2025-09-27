@@ -1,462 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sacrifice Keys: Maze Challenge</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 1100px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            width: 100%;
-        }
-        
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #ff6b6b, #feca57);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            color: #a5b1c2;
-            margin-bottom: 20px;
-        }
-        
-        .game-area {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            width: 100%;
-            margin-bottom: 30px;
-        }
-        
-        .player-section {
-            flex: 1;
-            min-width: 300px;
-            background: rgba(30, 30, 60, 0.7);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-        }
-        
-        .sacrifice-section {
-            flex: 1;
-            min-width: 300px;
-            background: rgba(30, 30, 60, 0.7);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-        }
-        
-        .section-title {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #feca57;
-            border-bottom: 2px solid #ff6b6b;
-            padding-bottom: 5px;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .stat {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #ff6b6b;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #a5b1c2;
-        }
-        
-        .abilities {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .ability {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            flex: 1;
-            min-width: 120px;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .ability.active {
-            background: rgba(255, 107, 107, 0.3);
-            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
-            transform: scale(1.05);
-        }
-        
-        .ability-icon {
-            font-size: 2rem;
-            margin-bottom: 5px;
-        }
-        
-        .sacrifice-options {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .sacrifice-option {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .sacrifice-option:hover {
-            background: rgba(255, 107, 107, 0.3);
-            transform: translateY(-5px);
-        }
-        
-        .sacrifice-option.sacrificed {
-            background: rgba(100, 100, 100, 0.5);
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .key {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #feca57;
-            margin-bottom: 5px;
-        }
-        
-        .sacrifice-effect {
-            font-size: 0.9rem;
-            color: #a5b1c2;
-        }
-        
-        .maze-container {
-            width: 100%;
-            max-width: 800px;
-            height: 500px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            overflow: hidden;
-            margin: 20px 0;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        
-        #mazeCanvas {
-            width: 100%;
-            height: 100%;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(45deg, #ff6b6b, #feca57);
-            color: #1a1a2e;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            font-size: 1rem;
-        }
-        
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
-        }
-        
-        button:disabled {
-            background: #555;
-            color: #999;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px 40px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 1.5rem;
-            color: #feca57;
-            display: none;
-            z-index: 10;
-            box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
-        }
-        
-        .instructions {
-            background: rgba(30, 30, 60, 0.7);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            width: 100%;
-            max-width: 800px;
-        }
-        
-        .instructions h3 {
-            color: #feca57;
-            margin-bottom: 10px;
-        }
-        
-        .instructions p {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        
-        .keyboard {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 15px;
-            max-width: 600px;
-        }
-        
-        .keyboard-key {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        .keyboard-key.sacrificed {
-            background: rgba(255, 107, 107, 0.3);
-            transform: scale(0.9);
-            opacity: 0.7;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-        
-        .progress {
-            height: 100%;
-            background: linear-gradient(90deg, #ff6b6b, #feca57);
-            width: 0%;
-            transition: width 0.5s;
-        }
-        
-        .mini-map {
-            width: 150px;
-            height: 150px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid #feca57;
-            border-radius: 8px;
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 5;
-        }
-        
-        @media (max-width: 768px) {
-            .game-area {
-                flex-direction: column;
-            }
-            
-            .sacrifice-options {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            h1 {
-                font-size: 2.5rem;
-            }
-            
-            .mini-map {
-                width: 100px;
-                height: 100px;
-                bottom: 10px;
-                right: 10px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Sacrifice Keys: Maze Challenge</h1>
-            <p class="subtitle">Navigate the maze. Sacrifice keys to survive.</p>
-        </header>
-        
-        <div class="game-area">
-            <div class="player-section">
-                <h2 class="section-title">Player Status</h2>
-                <div class="stats">
-                    <div class="stat">
-                        <div class="stat-value" id="score">0</div>
-                        <div class="stat-label">Score</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="level">1</div>
-                        <div class="stat-label">Level</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="lives">3</div>
-                        <div class="stat-label">Lives</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="sacrifices">0</div>
-                        <div class="stat-label">Sacrifices</div>
-                    </div>
-                </div>
-                
-                <h3 class="section-title">Active Abilities</h3>
-                <div class="abilities">
-                    <div class="ability" id="ability-speed">
-                        <div class="ability-icon">⚡</div>
-                        <div>Speed Boost</div>
-                    </div>
-                    <div class="ability" id="ability-shield">
-                        <div class="ability-icon">🛡️</div>
-                        <div>Shield</div>
-                    </div>
-                    <div class="ability" id="ability-magnet">
-                        <div class="ability-icon">🧲</div>
-                        <div>Magnet</div>
-                    </div>
-                    <div class="ability" id="ability-vision">
-                        <div class="ability-icon">👁️</div>
-                        <div>X-Ray Vision</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="sacrifice-section">
-                <h2 class="section-title">Sacrifice Options</h2>
-                <p>Sacrifice a key to gain special abilities:</p>
-                
-                <div class="sacrifice-options">
-                    <div class="sacrifice-option" data-key="ArrowUp" data-ability="speed">
-                        <div class="key">↑</div>
-                        <div class="sacrifice-effect">Speed Boost</div>
-                    </div>
-                    <div class="sacrifice-option" data-key="ArrowDown" data-ability="shield">
-                        <div class="key">↓</div>
-                        <div class="sacrifice-effect">Shield</div>
-                    </div>
-                    <div class="sacrifice-option" data-key="ArrowLeft" data-ability="magnet">
-                        <div class="key">←</div>
-                        <div class="sacrifice-effect">Magnet</div>
-                    </div>
-                    <div class="sacrifice-option" data-key="ArrowRight" data-ability="vision">
-                        <div class="key">→</div>
-                        <div class="sacrifice-effect">X-Ray Vision</div>
-                    </div>
-                    <div class="sacrifice-option" data-key="Space" data-ability="teleport">
-                        <div class="key">Space</div>
-                        <div class="sacrifice-effect">Teleport</div>
-                    </div>
-                    <div class="sacrifice-option" data-key="Shift" data-ability="freeze">
-                        <div class="key">Shift</div>
-                        <div class="sacrifice-effect">Freeze Enemies</div>
-                    </div>
-                </div>
-                
-                <div class="keyboard">
-                    <div class="keyboard-key" data-key="ArrowUp">↑</div>
-                    <div class="keyboard-key" data-key="ArrowLeft">←</div>
-                    <div class="keyboard-key" data-key="ArrowDown">↓</div>
-                    <div class="keyboard-key" data-key="ArrowRight">→</div>
-                    <div class="keyboard-key" data-key="Space">Space</div>
-                    <div class="keyboard-key" data-key="Shift">Shift</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="maze-container">
-            <canvas id="mazeCanvas"></canvas>
-            <div class="mini-map" id="miniMap"></div>
-            <div class="message" id="gameMessage">Game Over</div>
-        </div>
-        
-        <div class="controls">
-            <button id="startButton">Start Game</button>
-            <button id="resetButton">Reset Game</button>
-        </div>
-        
-        <div class="instructions">
-            <h3>How to Play</h3>
-            <p>Use the arrow keys to navigate through the maze. Collect points and reach the exit to advance to the next level.</p>
-            <p>When you need an advantage, sacrifice a key to gain special abilities. Once sacrificed, that key can no longer be used!</p>
-            <p>Each level features a more complex maze. How far can you go with fewer controls?</p>
-        </div>
-    </div>
-
-    <script>
+// Daydream Maze Game Script
         // Game variables
-        let canvas, ctx, miniMapCtx;
+        let canvas, ctx, miniMap, miniMapCtx;
         let gameActive = false;
         let score = 0;
         let level = 1;
@@ -472,23 +16,30 @@
         let exit;
         let sacrificedKeys = {};
         let activeAbilities = {};
-        
+        let listenersAdded = false; // Prevent multiple listeners
+
+        const area = document.getElementById('gameArea')
+        const head = document.getElementById('head')
+        const play = document.getElementById('play')
+
         // Initialize game
         function init() {
             canvas = document.getElementById('mazeCanvas');
             ctx = canvas.getContext('2d');
-            
+
             // Set canvas dimensions
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
             // Set up mini-map
-            const miniMap = document.getElementById('miniMap');
+            miniMap = document.getElementById('miniMap');
+            miniMap.width = miniMap.offsetWidth;
+            miniMap.height = miniMap.offsetHeight;
             miniMapCtx = miniMap.getContext('2d');
-            
+
             // Adjust cell size based on canvas size
             cellSize = Math.min(Math.floor(canvas.width / mazeWidth), Math.floor(canvas.height / mazeHeight));
-            
+
             // Initialize player
             player = {
                 x: 1,
@@ -498,32 +49,39 @@
                 color: '#ff6b6b',
                 speed: 1
             };
-            
+
             // Generate initial maze
             generateMaze();
-            
-            // Set up event listeners
-            document.getElementById('startButton').addEventListener('click', startGame);
-            document.getElementById('resetButton').addEventListener('click', resetGame);
-            
-            // Set up sacrifice options
-            document.querySelectorAll('.sacrifice-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    if (!gameActive) return;
-                    
-                    const key = this.getAttribute('data-key');
-                    const ability = this.getAttribute('data-ability');
-                    
-                    if (!sacrificedKeys[key]) {
-                        sacrificeKey(key, ability);
-                        this.classList.add('sacrificed');
-                    }
+
+            // Set up event listeners only once
+            if (!listenersAdded) {
+                document.getElementById('startButton').addEventListener('click', startGame);
+                document.getElementById('startButton').addEventListener('click', function(){
+                    area.style.display = 'none'
+                    head.style.display = 'none'
+                    play.style.display = 'none'
                 });
-            });
-            
-            // Set up keyboard controls
-            document.addEventListener('keydown', handleKeyDown);
-            
+                document.getElementById('resetButton').addEventListener('click', resetGame);
+
+                document.querySelectorAll('.sacrifice-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        if (!gameActive) return;
+
+                        const key = this.getAttribute('data-key');
+                        const ability = this.getAttribute('data-ability');
+
+                        if (!sacrificedKeys[key]) {
+                            sacrificeKey(key, ability);
+                            this.classList.add('sacrificed');
+                        }
+                    });
+                });
+
+                document.addEventListener('keydown', handleKeyDown);
+
+                listenersAdded = true;
+            }
+
             // Draw initial state
             draw();
         }
@@ -864,13 +422,14 @@
         
         // Draw the mini-map
         function drawMiniMap() {
-            const miniMapSize = 150;
+            if (!miniMapCtx) return; // Prevent error if not initialized
+            const miniMapSize = miniMap.width;
             const cellSizeMini = miniMapSize / mazeWidth;
-            
+
             // Clear mini-map
             miniMapCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
             miniMapCtx.fillRect(0, 0, miniMapSize, miniMapSize);
-            
+
             // Draw maze on mini-map
             for (let y = 0; y < mazeHeight; y++) {
                 for (let x = 0; x < mazeWidth; x++) {
@@ -981,13 +540,14 @@
         function sacrificeKey(key, ability) {
             sacrificedKeys[key] = true;
             sacrifices++;
-            
+
             // Update UI for sacrificed key
-            document.querySelector(`.keyboard-key[data-key="${key}"]`).classList.add('sacrificed');
-            
+            const keyElem = document.querySelector(`.keyboard-key[data-key="${key}"]`);
+            if (keyElem) keyElem.classList.add('sacrificed');
+
             // Activate ability
             activateAbility(ability);
-            
+
             updateUI();
         }
         
@@ -1053,22 +613,24 @@
             // Update progress bar for next level
             const progress = document.querySelector('.progress');
             const progressPercent = (score % 100) / 100 * 100;
-            progress.style.width = `${progressPercent}%`;
+            if (progress) progress.style.width = `${progressPercent}%`;
         }
-        
-        // Initialize the game when the page loads
-        window.addEventListener('load', init);
         
         // Handle window resize
         window.addEventListener('resize', function() {
             if (canvas) {
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
                 
                 // Regenerate maze with new cell size
                 cellSize = Math.min(Math.floor(canvas.width / mazeWidth), Math.floor(canvas.height / mazeHeight));
             }
+            if (miniMap) {
+                miniMap.width = miniMap.offsetWidth;
+                miniMap.height = miniMap.offsetHeight;
+            }
+            draw();
         });
-    </script>
-</body>
-</html>
+
+        // Initialize the game when the page loads
+        window.addEventListener('load', init);
