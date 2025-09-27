@@ -18,15 +18,15 @@
                 <h2 class="section-title">Player Status</h2>
                 <div class="stats">
                     <div class="stat">
-                        <div class="stat-value" id="score">0</div>
-                        <div class="stat-label">Score</div>
+                        <div class="stat-value" id="high">0</div>
+                        <div class="stat-label">Highest-Score</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-value" id="level">1</div>
+                        <div class="stat-value" id="leve">1</div>
                         <div class="stat-label">Level</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-value" id="lives">3</div>
+                        <div class="stat-value" id="">3</div>
                         <div class="stat-label">Lives</div>
                     </div>
                     <div class="stat">
@@ -99,6 +99,11 @@
         </div>
         
         <div class="maze-container">
+            <div id="gamestats">
+                <span class="stat-value" id="score"></span>
+                <span class="stat-value" id="lives"></span>
+                <span class="stat-value" id="level"></span>
+            </div>
             <canvas id="mazeCanvas"></canvas>
             <canvas class="mini-map" id="miniMap"></canvas>
             <div class="message" id="gameMessage">Game Over</div>

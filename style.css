@@ -99,8 +99,8 @@
         }
         
         .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
+            font-size: 1rem;
+            font-weight: 700;
             color: #ff6b6b;
         }
         
@@ -193,6 +193,10 @@
             height: 100%;
         }
         
+        #gamestats{
+            display: flex;
+            justify-content: space-between;
+        }
         .controls {
             display: flex;
             gap: 15px;

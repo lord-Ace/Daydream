@@ -608,9 +608,9 @@
         
         // Update the UI
         function updateUI() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('level').textContent = level;
-            document.getElementById('lives').textContent = lives;
+            document.getElementById('score').textContent = `score: ${score}`;
+            document.getElementById('level').textContent = `level: ${level}`;
+            document.getElementById('lives').textContent = `lives: ${lives}`;
             document.getElementById('sacrifices').textContent = sacrifices;
             
             // Update progress bar for next level
