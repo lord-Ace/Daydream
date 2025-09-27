@@ -478,19 +478,26 @@
         function handleKeyDown(e) {
             if (!gameActive) return;
 
-            // Block disabled keys and show alert
-            if (disabledKeys[e.code]) {
+            let code = e.code;
+
+            // If key is disabled and remapped, use the remapped key instead
+            if (disabledKeys[code] && keyRemap[code]) {
+                code = keyRemap[code];
+            }
+
+            // Block disabled keys and show alert if not remapped
+            if (disabledKeys[e.code] && !keyRemap[e.code]) {
                 alert(`The "${e.code}" key is disabled! Sacrifice another key or use a different control.`);
                 return;
             }
 
             // Block sacrificed keys
-            if (sacrificedKeys[e.code]) return;
+            if (sacrificedKeys[code]) return;
 
             let newX = player.x;
             let newY = player.y;
 
-            switch(e.code) {
+            switch(code) {
                 case 'ArrowUp':
                     newY--;
                     break;
@@ -592,6 +599,28 @@ const disableableKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Spa
 // Track disabled keys
 let disabledKeys = {};
 
+// Track key remapping
+let keyRemap = {};
+
+// Assign the disabled key to a new unused key
+function remapDisabledKey(disabledKey) {
+    // Find available keys that are not disabled, not sacrificed, and not already remapped
+    const availableKeys = disableableKeys.filter(key =>
+        !disabledKeys[key] &&
+        !sacrificedKeys[key] &&
+        !Object.values(keyRemap).includes(key) &&
+        key !== disabledKey
+    );
+    if (availableKeys.length === 0) {
+        alert("No available keys to remap!");
+        return;
+    }
+    // Pick the first available key (or random if you prefer)
+    const newKey = availableKeys[0];
+    keyRemap[disabledKey] = newKey;
+    alert(`"${disabledKey}" has been remapped to "${newKey}". Use "${newKey}" to move in that direction.`);
+}
+
 // Function to disable a random key after level up
 function disableRandomKey() {
     // Filter out already disabled keys
@@ -608,6 +637,7 @@ function disableRandomKey() {
 
     // Alert user
     alert(`The "${keyToDisable}" key is now disabled for the next level!`);
+    remapDisabledKey(keyToDisable); // Remap the disabled key
     updateOnscreenControls();
 }
 
@@ -690,7 +720,79 @@ window.addEventListener('load', () => {
     });
 });
 
-        // Handle window resize
+// Call updateOnscreenControls whenever keys are disabled
+function disableRandomKey() {
+    // Filter out already disabled keys
+    const availableKeys = disableableKeys.filter(key => !disabledKeys[key]);
+    if (availableKeys.length === 0) return; // All keys disabled
+
+    // Pick a random key to disable
+    const keyToDisable = availableKeys[Math.floor(Math.random() * availableKeys.length)];
+    disabledKeys[keyToDisable] = true;
+
+    // Update UI (optional: visually mark the key as disabled)
+    const keyElem = document.querySelector(`.keyboard-key[data-key="${keyToDisable}"]`);
+    if (keyElem) keyElem.classList.add('disabled');
+
+    // Alert user
+    alert(`The "${keyToDisable}" key is now disabled for the next level!`);
+    remapDisabledKey(keyToDisable); // Remap the disabled key
+    updateOnscreenControls();
+}
+
+// Also call after game reset and level up
+function resetGame() {
+    gameActive = false;
+    document.getElementById('startButton').disabled = false;
+    
+    // Reset sacrificed keys
+    sacrificedKeys = {};
+    activeAbilities = {};
+    
+    // Reset UI for sacrificed keys
+    document.querySelectorAll('.sacrifice-option').forEach(option => {
+        option.classList.remove('sacrificed');
+    });
+    
+    document.querySelectorAll('.keyboard-key').forEach(key => {
+        key.classList.remove('sacrificed');
+    });
+    
+    document.querySelectorAll('.ability').forEach(ability => {
+        ability.classList.remove('active');
+    });
+    
+    disabledKeys = {};
+    updateOnscreenControls();
+    
+    init();
+}
+
+function levelUp() {
+    level++;
+    score += 100;
+    
+    // Generate new maze for the next level
+    generateMaze();
+    player.x = 1;
+    player.y = 1;
+    
+    updateUI();
+    
+    // Show level up message
+    const message = document.getElementById('gameMessage');
+    message.textContent = `Level ${level}!`;
+    message.style.display = 'block';
+    
+    setTimeout(() => {
+        message.style.display = 'none';
+    }, 2000);
+
+    disableRandomKey();
+    updateOnscreenControls();
+}
+
+// Handle window resize
         window.addEventListener('resize', function() {
             if (canvas) {
                 canvas.width = canvas.parentElement.clientWidth;
