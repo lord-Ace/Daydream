@@ -225,6 +225,9 @@
                 ability.classList.remove('active');
             });
             
+            disabledKeys = {};
+            updateOnscreenControls();
+            
             init();
         }
         
@@ -605,6 +608,7 @@ function disableRandomKey() {
 
     // Alert user
     alert(`The "${keyToDisable}" key is now disabled for the next level!`);
+    updateOnscreenControls();
 }
 
 // Call this function at the end of levelUp()
@@ -629,6 +633,7 @@ function levelUp() {
     }, 2000);
 
     disableRandomKey();
+    updateOnscreenControls();
 }
         
         // Game over
@@ -654,6 +659,37 @@ function levelUp() {
             if (progress) progress.style.width = `${progressPercent}%`;
         }
         
+        // Show on-screen controls if any navigation key is disabled
+function updateOnscreenControls() {
+    const onscreen = document.getElementById('onscreen-controls');
+    const anyDisabled = disableableKeys.some(key => disabledKeys[key]);
+    onscreen.style.display = anyDisabled ? 'block' : 'none';
+
+    // Disable buttons for disabled keys
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        const dir = btn.getAttribute('data-dir');
+        btn.disabled = !!disabledKeys[dir];
+    });
+}
+
+// Handle on-screen navigation button clicks
+function handleNavBtnClick(e) {
+    const dir = e.target.getAttribute('data-dir');
+    if (disabledKeys[dir]) {
+        alert(`The "${dir}" key is disabled!`);
+        return;
+    }
+    // Simulate keydown event for navigation
+    handleKeyDown({ code: dir });
+}
+
+// Add event listeners for nav buttons after DOM is loaded
+window.addEventListener('load', () => {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', handleNavBtnClick);
+    });
+});
+
         // Handle window resize
         window.addEventListener('resize', function() {
             if (canvas) {
