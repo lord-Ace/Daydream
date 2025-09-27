@@ -604,11 +604,12 @@ let keyRemap = {};
 
 // Assign the disabled key to a new unused key
 function remapDisabledKey(disabledKey) {
-    // Find available keys that are not disabled, not sacrificed, and not already remapped
+    // Find available keys that are not disabled, not sacrificed, not already remapped, and not already used as a remap target
+    const usedTargets = Object.values(keyRemap);
     const availableKeys = disableableKeys.filter(key =>
         !disabledKeys[key] &&
         !sacrificedKeys[key] &&
-        !Object.values(keyRemap).includes(key) &&
+        !usedTargets.includes(key) &&
         key !== disabledKey
     );
     if (availableKeys.length === 0) {
