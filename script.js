@@ -485,9 +485,14 @@
                 code = keyRemap[code];
             }
 
-            // Block disabled keys and show alert if not remapped
+            // If key is disabled and not remapped, reduce lives and show alert
             if (disabledKeys[e.code] && !keyRemap[e.code]) {
-                alert(`The "${e.code}" key is disabled! Sacrifice another key or use a different control.`);
+                lives--;
+                updateUI();
+                alert(`The "${e.code}" key is disabled! You lost a life.`);
+                if (lives <= 0) {
+                    gameOver();
+                }
                 return;
             }
 
@@ -512,7 +517,6 @@
                     break;
                 case 'Space':
                     if (activeAbilities.teleport) {
-                        // Teleport to a random empty cell
                         let teleportX, teleportY;
                         do {
                             teleportX = Math.floor(Math.random() * (mazeWidth - 2)) + 1;
@@ -525,18 +529,15 @@
                     }
                     break;
             }
-            
-            // Check if new position is valid (not a wall)
+
             if (newX >= 0 && newX < mazeWidth && newY >= 0 && newY < mazeHeight &&
                 maze[newY][newX] !== 1) {
                 player.x = newX;
                 player.y = newY;
 
-                // Check for collision with enemies
                 for (let i = 0; i < enemies.length; i++) {
                     if (enemies[i].x === player.x && enemies[i].y === player.y) {
                         if (activeAbilities.shield) {
-                            // Shield protects from one hit
                             activeAbilities.shield = false;
                             document.getElementById('ability-shield').classList.remove('active');
                         } else {
@@ -547,7 +548,6 @@
                                 gameOver();
                                 return;
                             } else {
-                                // Reset player position
                                 player.x = 1;
                                 player.y = 1;
                             }
